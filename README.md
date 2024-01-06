@@ -86,46 +86,192 @@ Images are copied from a source folder to a destination folder based on the info
 
 The code counts the number of files in a specified folder.
 
-## Model Evaluation
+## Image and Description Processing
 
-The code evaluates the fine-tuned model on the test dataset using various evaluation metrics, including BLEU, ROUGE, and METEOR. The evaluation process includes the following steps:
+The following code snippet focuses on processing and organizing the image descriptions from the FlickrStyle dataset. This step involves reading funny and romantic descriptions from their respective files, associating them with image names, and storing the information in a CSV file.
 
-### Generate Captions for Test Images
+```python
+import csv
 
-Captions are generated for test images using the fine-tuned model. Neutral descriptions and image names are used as input. Predicted captions are compared against ground truth captions, and evaluation metrics are calculated.
+# Read funny descriptions from the funny file
+funny_descriptions = []
+with open('/content/FlickrStyle_v0.9/humor/funny_train.txt', 'r', encoding='latin-1') as funny_file:
+    funny_descriptions = funny_file.readlines()
 
-### Evaluation Metrics
+# Read image names from the train.p file
+image_names = []
+with open('/content/FlickrStyle_v0.9/humor/train.p', 'r', encoding='latin-1') as train_file:
+    lines = train_file.readlines()
+    for line in lines:
+        if line.startswith('aV') or line.startswith('V'):
+            image_name = line.split('_')[0][1:]
+            image_names.append(image_name)
 
-- **BLEU Scores:** The code calculates the BLEU score for funny, romantic, and neutral captions.
-- **ROUGE Scores:** ROUGE-1, ROUGE-2, and ROUGE-L scores are calculated for funny, romantic, and neutral captions.
-- **METEOR Scores:** METEOR score is calculated for funny, romantic, and neutral captions.
+# Create a dictionary to store image names and corresponding descriptions
+image_dict = {}
+for i, image_name in enumerate(image_names):
+    image_dict[image_name] = {
+        'funny_description': funny_descriptions[i].strip(),
+        'romantic_description': None  # Initialize as None, to be filled later
+    }
 
-## Results
+# Read romantic descriptions from the romantic file
+with open('/content/FlickrStyle_v0.9/romantic/romantic_train.txt', 'r', encoding='latin-1') as romantic_file:
+    romantic_descriptions = romantic_file.readlines()
 
-The table below provides the evaluation results for the fine-tuned model on the test dataset:
+# Fill in the romantic descriptions in the dictionary
+for i, image_name in enumerate(image_names):
+    image_dict[image_name]['romantic_description'] = romantic_descriptions[i].strip()
 
-| CATEGORY | METRIC   | VALUE   |
-|----------|----------|---------|
-| Funny    | BLEU     | 0.512   |
-| Romantic | BLEU     | 0.551   |
-| Neutral  | BLEU     | 0.577   |
-| Funny    | ROUGE-1  | 0.384   |
-| Funny    | ROUGE-2  | 0.201   |
-| Funny    | ROUGE-L  | 0.342   |
-| Romantic | ROUGE-1  | 0.339   |
-| Romantic | ROUGE-2  | 0.158   |
-| Romantic | ROUGE-L  | 0.323   |
-| Neutral  | ROUGE-1  | 0.552   |
-| Neutral  | ROUGE-2  | 0.373   |
-| Neutral  | ROUGE-L  | 0.521   |
-| Funny    | METEOR   | 0.238   |
-| Romantic | METEOR   | 0.222   |
-| Neutral  | METEOR   | 0.273   |
+# Write the data to a CSV file
+with open('output.csv', 'w', newline='') as csvfile:
+    fieldnames = ['Image Name', 'Funny Description', 'Romantic Description']
+    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
-These evaluation metrics provide insights into the performance of the fine-tuned model on generating captions for funny, romantic, and neutral descriptions.
+    writer.writeheader()
+    for image_name, descriptions in image_dict.items():
+        writer.writerow({
+            'Image Name': f'{image_name}.jpg',
+            'Funny Description': descriptions['funny_description'],
+            'Romantic Description': descriptions['romantic_description']
+        })
 
-## Acknowledgments
-- Any acknowledgments or credits for external libraries, models, or datasets used in the code.
+print("CSV file created successfully.")
 ```
 
-This GitHub README format provides a clear structure, using markdown syntax for headers, code blocks, and tables. Users can easily follow the instructions and understand the overview of the provided code.
+## Image and Description Processing
+
+The provided code block is responsible for processing and organizing image descriptions from the FlickrStyle dataset. It involves reading funny and romantic descriptions from their respective files, associating them with image names, and storing the information in a CSV file.
+
+```python
+import csv
+
+# Read funny descriptions from the funny file
+funny_descriptions = []
+with open('/content/FlickrStyle_v0.9/humor/funny_train.txt', 'r', encoding='latin-1') as funny_file:
+    funny_descriptions = funny_file.readlines()
+
+# Read image names from the train.p file
+image_names = []
+with open('/content/FlickrStyle_v0.9/humor/train.p', 'r', encoding='latin-1') as train_file:
+    lines = train_file.readlines()
+    for line in lines:
+        if line.startswith('aV') or line.startswith('V'):
+            image_name = line.split('_')[0][1:]
+            image_names.append(image_name)
+
+# Create a dictionary to store image names and corresponding descriptions
+image_dict = {}
+for i, image_name in enumerate(image_names):
+    image_dict[image_name] = {
+        'funny_description': funny_descriptions[i].strip(),
+        'romantic_description': None  # Initialize as None, to be filled later
+    }
+
+# Read romantic descriptions from the romantic file
+with open('/content/FlickrStyle_v0.9/romantic/romantic_train.txt', 'r', encoding='latin-1') as romantic_file:
+    romantic_descriptions = romantic_file.readlines()
+
+# Fill in the romantic descriptions in the dictionary
+for i, image_name in enumerate(image_names):
+    image_dict[image_name]['romantic_description'] = romantic_descriptions[i].strip()
+
+# Write the data to a CSV file
+with open('output.csv', 'w', newline='') as csvfile:
+    fieldnames = ['Image Name', 'Funny Description', 'Romantic Description']
+    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+    writer.writeheader()
+    for image_name, descriptions in image_dict.items():
+        writer.writerow({
+            'Image Name': f'{image_name}.jpg',
+            'Funny Description': descriptions['funny_description'],
+            'Romantic Description': descriptions['romantic_description']
+        })
+
+print("CSV file created successfully.")
+```
+
+This code block performs the following steps:
+
+1. **Read Funny Descriptions:** Reads funny descriptions from the `funny_train.txt` file.
+
+2. **Read Image Names:** Reads image names from the `train.p` file.
+
+3. **Create Image Dictionary:** Creates a dictionary (`image_dict`) to store image names along with their funny and romantic descriptions.
+
+4. **Read Romantic Descriptions:** Reads romantic descriptions from the `romantic_train.txt` file.
+
+5. **Fill in Romantic Descriptions:** Fills in the romantic descriptions in the dictionary.
+
+6. **Write Data to CSV File:** Writes the collected data to a CSV file named `output.csv`, including image names, funny descriptions, and romantic descriptions.
+
+This organized CSV file serves as input for further tasks such as fine-tuning a model on the FlickrStyle dataset. 
+
+## Image and Description Processing
+
+The provided code block is responsible for processing and organizing image descriptions from the FlickrStyle dataset. It involves reading funny and romantic descriptions from their respective files, associating them with image names, and storing the information in a CSV file.
+
+```python
+import csv  # Import the CSV module for working with CSV files
+
+# Read funny descriptions from the funny file
+funny_descriptions = []
+with open('/content/FlickrStyle_v0.9/humor/funny_train.txt', 'r', encoding='latin-1') as funny_file:
+    funny_descriptions = funny_file.readlines()  # Read lines from the funny file
+
+# Read image names from the train.p file
+image_names = []
+with open('/content/FlickrStyle_v0.9/humor/train.p', 'r', encoding='latin-1') as train_file:
+    lines = train_file.readlines()  # Read lines from the train.p file
+    for line in lines:
+        if line.startswith('aV') or line.startswith('V'):
+            image_name = line.split('_')[0][1:]  # Extract image names from lines
+            image_names.append(image_name)  # Append image names to the list
+
+# Create a dictionary to store image names and corresponding descriptions
+image_dict = {}
+for i, image_name in enumerate(image_names):
+    image_dict[image_name] = {
+        'funny_description': funny_descriptions[i].strip(),  # Add funny descriptions to the dictionary
+        'romantic_description': None  # Initialize romantic descriptions as None, to be filled later
+    }
+
+# Read romantic descriptions from the romantic file
+with open('/content/FlickrStyle_v0.9/romantic/romantic_train.txt', 'r', encoding='latin-1') as romantic_file:
+    romantic_descriptions = romantic_file.readlines()  # Read lines from the romantic file
+
+# Fill in the romantic descriptions in the dictionary
+for i, image_name in enumerate(image_names):
+    image_dict[image_name]['romantic_description'] = romantic_descriptions[i].strip()  # Add romantic descriptions
+
+# Write the data to a CSV file
+with open('output.csv', 'w', newline='') as csvfile:
+    fieldnames = ['Image Name', 'Funny Description', 'Romantic Description']
+    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)  # Create a CSV writer with specified field names
+
+    writer.writeheader()  # Write the header row to the CSV file
+    for image_name, descriptions in image_dict.items():
+        writer.writerow({
+            'Image Name': f'{image_name}.jpg',  # Format image name with '.jpg' extension
+            'Funny Description': descriptions['funny_description'],  # Write funny descriptions to the CSV file
+            'Romantic Description': descriptions['romantic_description']  # Write romantic descriptions
+        })
+
+print("CSV file created successfully.")  # Print a success message
+```
+
+This code block performs the following steps:
+
+1. **Read Funny Descriptions:** Reads funny descriptions from the `funny_train.txt` file.
+2. **Read Image Names:** Reads image names from the `train.p` file.
+3. **Create Image Dictionary:** Creates a dictionary (`image_dict`) to store image names along with their funny and romantic descriptions.
+4. **Read Romantic Descriptions:** Reads romantic descriptions from the `romantic_train.txt` file.
+5. **Fill in Romantic Descriptions:** Fills in the romantic descriptions in the dictionary.
+6. **Write Data to CSV File:** Writes the collected data to a CSV file named `output.csv`, including image names, funny descriptions, and romantic descriptions.
+
+This organized CSV file serves as input for further tasks such as fine-tuning a model on the FlickrStyle dataset.
+```
+This code accomplishes the following tasks:
+1. Loads image information from a CSV file into a DataFrame (`df`).
+2. Checks if the destination folder exists; if not, it creates the
