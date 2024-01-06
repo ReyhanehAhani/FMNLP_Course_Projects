@@ -82,10 +82,6 @@ The code reads the CSV file using pandas and performs any necessary data preproc
 
 Images are copied from a source folder to a destination folder based on the information in the CSV file.
 
-### Count Files in Folder
-
-The code counts the number of files in a specified folder.
-
 ## Image and Description Processing
 
 The following code snippet focuses on processing and organizing the image descriptions from the FlickrStyle dataset. This step involves reading funny and romantic descriptions from their respective files, associating them with image names, and storing the information in a CSV file.
@@ -139,136 +135,108 @@ with open('output.csv', 'w', newline='') as csvfile:
 print("CSV file created successfully.")
 ```
 
-## Image and Description Processing
 
-The provided code block is responsible for processing and organizing image descriptions from the FlickrStyle dataset. It involves reading funny and romantic descriptions from their respective files, associating them with image names, and storing the information in a CSV file.
 
+The code counts the number of files in a specified folder.
 ```python
-import csv
+# Import necessary modules from the transformers library
+from transformers import AutoProcessor, BlipForConditionalGeneration
 
-# Read funny descriptions from the funny file
-funny_descriptions = []
-with open('/content/FlickrStyle_v0.9/humor/funny_train.txt', 'r', encoding='latin-1') as funny_file:
-    funny_descriptions = funny_file.readlines()
+# Load the processor for the pre-trained image captioning model
+processor = AutoProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
 
-# Read image names from the train.p file
-image_names = []
-with open('/content/FlickrStyle_v0.9/humor/train.p', 'r', encoding='latin-1') as train_file:
-    lines = train_file.readlines()
-    for line in lines:
-        if line.startswith('aV') or line.startswith('V'):
-            image_name = line.split('_')[0][1:]
-            image_names.append(image_name)
-
-# Create a dictionary to store image names and corresponding descriptions
-image_dict = {}
-for i, image_name in enumerate(image_names):
-    image_dict[image_name] = {
-        'funny_description': funny_descriptions[i].strip(),
-        'romantic_description': None  # Initialize as None, to be filled later
-    }
-
-# Read romantic descriptions from the romantic file
-with open('/content/FlickrStyle_v0.9/romantic/romantic_train.txt', 'r', encoding='latin-1') as romantic_file:
-    romantic_descriptions = romantic_file.readlines()
-
-# Fill in the romantic descriptions in the dictionary
-for i, image_name in enumerate(image_names):
-    image_dict[image_name]['romantic_description'] = romantic_descriptions[i].strip()
-
-# Write the data to a CSV file
-with open('output.csv', 'w', newline='') as csvfile:
-    fieldnames = ['Image Name', 'Funny Description', 'Romantic Description']
-    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
-    writer.writeheader()
-    for image_name, descriptions in image_dict.items():
-        writer.writerow({
-            'Image Name': f'{image_name}.jpg',
-            'Funny Description': descriptions['funny_description'],
-            'Romantic Description': descriptions['romantic_description']
-        })
-
-print("CSV file created successfully.")
+# Load the pre-trained image captioning model
+model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
 ```
 
-This code block performs the following steps:
+In this code snippet:
 
-1. **Read Funny Descriptions:** Reads funny descriptions from the `funny_train.txt` file.
-
-2. **Read Image Names:** Reads image names from the `train.p` file.
-
-3. **Create Image Dictionary:** Creates a dictionary (`image_dict`) to store image names along with their funny and romantic descriptions.
-
-4. **Read Romantic Descriptions:** Reads romantic descriptions from the `romantic_train.txt` file.
-
-5. **Fill in Romantic Descriptions:** Fills in the romantic descriptions in the dictionary.
-
-6. **Write Data to CSV File:** Writes the collected data to a CSV file named `output.csv`, including image names, funny descriptions, and romantic descriptions.
-
-This organized CSV file serves as input for further tasks such as fine-tuning a model on the FlickrStyle dataset. 
-
-## Image and Description Processing
-
-The provided code block is responsible for processing and organizing image descriptions from the FlickrStyle dataset. It involves reading funny and romantic descriptions from their respective files, associating them with image names, and storing the information in a CSV file.
+- The `AutoProcessor` and `BlipForConditionalGeneration` classes are imported from the transformers library.
+- The `AutoProcessor.from_pretrained` method is used to load the processor for the pre-trained image captioning model.
+- The `BlipForConditionalGeneration.from_pretrained` method is used to load the pre-trained image captioning model.
 
 ```python
-import csv  # Import the CSV module for working with CSV files
+# Get the tokenizer from the processor
+tokenizer = processor.tokenizer
 
-# Read funny descriptions from the funny file
-funny_descriptions = []
-with open('/content/FlickrStyle_v0.9/humor/funny_train.txt', 'r', encoding='latin-1') as funny_file:
-    funny_descriptions = funny_file.readlines()  # Read lines from the funny file
+# Access the BERT model from the text_decoder of the image captioning model
+bert = model.text_decoder.bert
 
-# Read image names from the train.p file
-image_names = []
-with open('/content/FlickrStyle_v0.9/humor/train.p', 'r', encoding='latin-1') as train_file:
-    lines = train_file.readlines()  # Read lines from the train.p file
-    for line in lines:
-        if line.startswith('aV') or line.startswith('V'):
-            image_name = line.split('_')[0][1:]  # Extract image names from lines
-            image_names.append(image_name)  # Append image names to the list
+# Define special tokens for additional categories (funny, romantic, neutral)
+special_tokens_dict = {'additional_special_tokens': [funny_token, romantic_token, neutral_token]}
 
-# Create a dictionary to store image names and corresponding descriptions
-image_dict = {}
-for i, image_name in enumerate(image_names):
-    image_dict[image_name] = {
-        'funny_description': funny_descriptions[i].strip(),  # Add funny descriptions to the dictionary
-        'romantic_description': None  # Initialize romantic descriptions as None, to be filled later
-    }
+# Add the special tokens to the tokenizer
+num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
 
-# Read romantic descriptions from the romantic file
-with open('/content/FlickrStyle_v0.9/romantic/romantic_train.txt', 'r', encoding='latin-1') as romantic_file:
-    romantic_descriptions = romantic_file.readlines()  # Read lines from the romantic file
-
-# Fill in the romantic descriptions in the dictionary
-for i, image_name in enumerate(image_names):
-    image_dict[image_name]['romantic_description'] = romantic_descriptions[i].strip()  # Add romantic descriptions
-
-# Write the data to a CSV file
-with open('output.csv', 'w', newline='') as csvfile:
-    fieldnames = ['Image Name', 'Funny Description', 'Romantic Description']
-    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)  # Create a CSV writer with specified field names
-
-    writer.writeheader()  # Write the header row to the CSV file
-    for image_name, descriptions in image_dict.items():
-        writer.writerow({
-            'Image Name': f'{image_name}.jpg',  # Format image name with '.jpg' extension
-            'Funny Description': descriptions['funny_description'],  # Write funny descriptions to the CSV file
-            'Romantic Description': descriptions['romantic_description']  # Write romantic descriptions
-        })
-
-print("CSV file created successfully.")  # Print a success message
+# Resize the BERT model's token embeddings to accommodate the added special tokens
+bert.resize_token_embeddings(len(tokenizer))
 ```
 
-This code block performs the following steps:
+In this code snippet:
 
-1. **Read Funny Descriptions:** Reads funny descriptions from the `funny_train.txt` file.
-2. **Read Image Names:** Reads image names from the `train.p` file.
-3. **Create Image Dictionary:** Creates a dictionary (`image_dict`) to store image names along with their funny and romantic descriptions.
-4. **Read Romantic Descriptions:** Reads romantic descriptions from the `romantic_train.txt` file.
-5. **Fill in Romantic Descriptions:** Fills in the romantic descriptions in the dictionary.
-6. **Write Data to CSV File:** Writes the collected data to a CSV file named `output.csv`, including image names, funny descriptions, and romantic descriptions.
+- The `tokenizer` is obtained from the `processor`.
+- The BERT model is accessed from the `text_decoder` attribute of the image captioning model.
+- Special tokens for additional categories (e.g., funny, romantic, neutral) are defined in the `special_tokens_dict`.
+- The `tokenizer.add_special_tokens` method is used to add the special tokens, and the number of added tokens is stored in `num_added_toks`.
+- The `resize_token_embeddings` method is called on the BERT model to adjust the token embeddings based on the new vocabulary size after adding special tokens.
+
+
+
+```python
+# Loop through epochs
+for e in range(2):
+    # Loop through batches using tqdm for progress visualization
+    for i in (pbar := tqdm(range(0, len(train_df), BATCH_SIZE))):
+        # Define the batch range
+        batch = range(i, i + BATCH_SIZE)
+        
+        # Extract text for funny, romantic, and neutral categories
+        text_funny = list(df.iloc[batch, 1])
+        text_romantic = list(df.iloc[batch, 2])
+        text_neutral = list(df.iloc[batch, 4])
+        
+        # Load images from the specified folder
+        images = [Image.open(os.path.join('/content/FMNLP_dataset/flickerstyle/images', df.iloc[idx, 0])) for idx in batch]
+        images = list(chain.from_iterable(repeat(images, 3)))
+
+        # Create input text for the model
+        text = [neutral_token + ':' + text + in_ + ':' for in_ in (funny_token, romantic_token, neutral_token) for text in text_neutral]
+        
+        # Create target text for training
+        target = [text[i] + t for i, t in enumerate(text_funny + text_romantic + text_neutral)]
+
+        # Prepare input for the processor
+        pre_out = processor(text_target=target, text=text, images=images, return_tensors="pt", truncation=True, padding='max_length').to(DEVICE)
+        
+        # Forward pass through the model
+        output = model(**pre_out)
+
+        # Calculate loss
+        loss = output.loss
+
+        # Print and log loss every 10 steps
+        if i % 10 == 0:
+            pbar.set_description(f'Loss: {loss.item()}')
+            writer.add_scalar('training loss', loss.item())
+
+        # Backward pass and optimization step
+        loss.backward()
+        optimizer.step()
+        optimizer.zero_grad()
+```
+
+In this code snippet:
+
+- The outer loop iterates over epochs (`for e in range(2)`).
+- The inner loop iterates over batches using tqdm for progress visualization.
+- Batches of text and images are extracted from the dataframe and loaded from the specified image folder.
+- Input text for the model is created, including categories (funny, romantic, neutral).
+- Target text for training is generated based on the input.
+- The input is preprocessed using the `processor`.
+- The model is forward-passed with the preprocessed input.
+- Loss is calculated based on the model output.
+- Loss is printed and logged every 10 steps.
+- Backward pass and optimization step are performed to update model parameters.
 
 ```markdown
 | Category | Metric    | Score   |
