@@ -270,6 +270,29 @@ This code block performs the following steps:
 5. **Fill in Romantic Descriptions:** Fills in the romantic descriptions in the dictionary.
 6. **Write Data to CSV File:** Writes the collected data to a CSV file named `output.csv`, including image names, funny descriptions, and romantic descriptions.
 
+```markdown
+| Category | Metric    | Score   |
+|----------|-----------|---------|
+| Funny    | BLEU      | 0.512   |
+| Romantic | BLEU      | 0.551   |
+| Neutral  | BLEU      | 0.577   |
+| Funny    | ROUGE-1   | 0.384   |
+| Funny    | ROUGE-2   | 0.201   |
+| Funny    | ROUGE-L   | 0.342   |
+| Romantic | ROUGE-1   | 0.339   |
+| Romantic | ROUGE-2   | 0.158   |
+| Romantic | ROUGE-L   | 0.323   |
+| Neutral  | ROUGE-1   | 0.552   |
+| Neutral  | ROUGE-2   | 0.373   |
+| Neutral  | ROUGE-L   | 0.521   |
+| Funny    | METEOR    | 0.238   |
+| Romantic | METEOR    | 0.222   |
+| Neutral  | METEOR    | 0.273   |
+```
+
+The detailed table above presents the evaluation results for the fine-tuned model on the test dataset, encompassing BLEU scores, ROUGE scores (ROUGE-1, ROUGE-2, ROUGE-L), and METEOR scores. The scores are categorized based on the type of descriptions, including funny, romantic, and neutral.
+
+
 This organized CSV file serves as input for further tasks such as fine-tuning a model on the FlickrStyle dataset.
 ```
 This code accomplishes the following tasks:
